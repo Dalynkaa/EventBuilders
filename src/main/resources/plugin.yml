@@ -1,0 +1,5 @@
+name: EventBuilders
+version: '${project.version}'
+main: fun.dalynkaa.eventbuilders.EventBuilders
+api-version: 1.19
+load: STARTUP
