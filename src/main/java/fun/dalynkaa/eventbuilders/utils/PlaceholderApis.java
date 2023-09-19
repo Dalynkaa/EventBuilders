@@ -1,16 +1,17 @@
-package com.otsosity.spbuildrevrited.utils;
+package fun.dalynkaa.eventbuilders.utils;
 
 
-import com.otsosity.spbuildrevrited.SpBuildRevrited;
-import com.otsosity.spbuildrevrited.utils.dataClasses.Game;
-import com.otsosity.spbuildrevrited.utils.dataClasses.PlotPlayer;
+
+import fun.dalynkaa.eventbuilders.EventBuilders;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 public class PlaceholderApis extends PlaceholderExpansion {
-    private final SpBuildRevrited plugin;
-    public PlaceholderApis(SpBuildRevrited plugin) {
+    private final EventBuilders plugin;
+    public PlaceholderApis(EventBuilders plugin) {
         this.plugin = plugin;
     }
 

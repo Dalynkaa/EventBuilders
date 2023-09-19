@@ -8,6 +8,8 @@ import fun.dalynkaa.eventbuilders.utils.HeadUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,12 +18,12 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.UUID;
 
-public class InventoryButton {
+public class KickButton {
     private ItemStack itemStack;
     private Component name;
     private List<Component> lore;
-    private IInventoryButton<PlayerInteractEvent> action;
-    public InventoryButton(ItemStack item){
+    private IKickButton<EntityDamageByEntityEvent> action;
+    public KickButton(ItemStack item){
         this.action = null;
         this.name = null;
         this.lore = null;
@@ -32,7 +34,7 @@ public class InventoryButton {
         return itemStack;
     }
 
-    public InventoryButton setItemStack(ItemStack itemStack) {
+    public KickButton setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
         return this;
     }
@@ -41,7 +43,7 @@ public class InventoryButton {
         return name;
     }
 
-    public InventoryButton setName(Component name) {
+    public KickButton setName(Component name) {
         this.name = name;
         return this;
     }
@@ -50,33 +52,33 @@ public class InventoryButton {
         return lore;
     }
 
-    public InventoryButton setLore(List<Component> lore) {
+    public KickButton setLore(List<Component> lore) {
         this.lore = lore;
         return this;
     }
 
-    public IInventoryButton<PlayerInteractEvent> getAction() {
+    public IKickButton<EntityDamageByEntityEvent> getAction() {
         return action;
     }
 
-    public static InventoryButton from(ItemStack stack){
-        return new InventoryButton(stack);
+    public static KickButton from(ItemStack stack){
+        return new KickButton(stack);
     }
-    public static InventoryButton from(Material material){
+    public static KickButton from(Material material){
         ItemStack stack = new ItemStack(material);
-        return new InventoryButton(stack);
+        return new KickButton(stack);
     }
-    public static InventoryButton fromHead(String url){
+    public static KickButton fromHead(String url){
         ItemStack stack = HeadUtils.getCustomHead(url);
-        return new InventoryButton(stack);
+        return new KickButton(stack);
     }
-    public static InventoryButton fromItemsAdder(String id){
+    public static KickButton fromItemsAdder(String id){
         CustomStack customStack = CustomStack.getInstance(id);
 
-        return new InventoryButton(customStack.getItemStack());
+        return new KickButton(customStack.getItemStack());
 
     }
-    public ItemStack build(IInventoryButton<PlayerInteractEvent> action, String id){
+    public ItemStack build(IKickButton<EntityDamageByEntityEvent> action, String id){
         this.action = action;
         String uuid = UUID.randomUUID().toString();
         ItemMeta meta = this.itemStack.getItemMeta();
@@ -84,9 +86,9 @@ public class InventoryButton {
         meta.lore(lore);
         meta.getPersistentDataContainer().set(NamespacedKey.fromString("item_id"), PersistentDataType.STRING, uuid);
         meta.getPersistentDataContainer().set(NamespacedKey.fromString("gui_item"), PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(NamespacedKey.fromString("click"), PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(NamespacedKey.fromString("action"), PersistentDataType.BOOLEAN, true);
         this.itemStack.setItemMeta(meta);
-        EventBuilders.getInstance().inventoryMap.put(uuid,this);
+        EventBuilders.getInstance().kickMap.put(uuid,this);
         return this.itemStack;
     }
 }

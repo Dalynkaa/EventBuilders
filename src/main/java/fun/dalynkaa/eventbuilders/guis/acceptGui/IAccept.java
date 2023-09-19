@@ -1,4 +1,4 @@
-package com.dalynkaa.guis;
+package fun.dalynkaa.eventbuilders.guis.acceptGui;
 
 import org.bukkit.event.Event;
 

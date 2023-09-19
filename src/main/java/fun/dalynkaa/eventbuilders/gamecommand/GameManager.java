@@ -1,7 +1,7 @@
-package com.otsosity.spbuildrevrited.commands.gamecommand;
+package fun.dalynkaa.eventbuilders.gamecommand;
 
-import com.otsosity.spbuildrevrited.commands.gamecommand.subcommands.createCommand;
-import com.otsosity.spbuildrevrited.commands.gamecommand.subcommands.createPlot;
+
+import fun.dalynkaa.eventbuilders.gamecommand.subcommands.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -12,11 +12,14 @@ import java.util.List;
 
 public class GameManager implements TabExecutor {
 
-    private ArrayList<GameSubCommand> subcommands = new ArrayList<>();
+    private final ArrayList<GameSubCommand> subcommands = new ArrayList<>();
 
     public GameManager(){
-        subcommands.add(new createCommand());
-        subcommands.add(new createPlot());
+        subcommands.add(new addPlots());
+        subcommands.add(new setLocation());
+        subcommands.add(new openEndGame());
+        subcommands.add(new teleportToPlot());
+        subcommands.add(new unbanPlayer());
     }
 
     @Override
@@ -45,7 +48,6 @@ public class GameManager implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1){ //prank <subcommand> <args>
             ArrayList<String> subcommandsArguments = new ArrayList<>();
-
             for (int i = 0; i < getSubCommands().size(); i++){
                 subcommandsArguments.add(getSubCommands().get(i).getName());
             }

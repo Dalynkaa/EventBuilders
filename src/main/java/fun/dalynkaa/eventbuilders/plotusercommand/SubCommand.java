@@ -1,4 +1,4 @@
-package com.dalynkaa.commands.mineusercommand;
+package fun.dalynkaa.eventbuilders.plotusercommand;
 
 import org.bukkit.entity.Player;
 

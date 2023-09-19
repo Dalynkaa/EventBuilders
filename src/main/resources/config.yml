@@ -1,0 +1,6 @@
+mariadb:
+  ip: "141.147.110.55"
+
+timers:
+  name: 123
+  current_time: 0

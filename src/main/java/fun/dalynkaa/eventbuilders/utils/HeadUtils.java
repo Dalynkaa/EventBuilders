@@ -1,17 +1,12 @@
-package com.otsosity.spbuildrevrited.utils;
+package fun.dalynkaa.eventbuilders.utils;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
-import com.otsosity.spbuildrevrited.SpBuildRevrited;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.UUID;
 
 public class HeadUtils {

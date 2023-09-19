@@ -1,14 +1,15 @@
-package com.otsosity.spbuildrevrited.utils.dataClasses;
+package fun.dalynkaa.eventbuilders.utils.dataClasses;
 
 import com.google.gson.Gson;
 import com.sk89q.worldedit.math.BlockVector3;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.Objects;
 
-public final class PlotLocation {
+public class PlotLocation {
     private Integer x;
     private Integer y;
     private Integer z;
@@ -25,6 +26,19 @@ public final class PlotLocation {
         this.x = x;
         return this;
     }
+    public PlotLocation addX(Integer x1){
+        this.x = this.x+x1;
+        return this;
+    }
+    public PlotLocation addY(Integer y1){
+        this.y = this.y+y1;
+        return this;
+    }
+    public PlotLocation addZ(Integer z1){
+        this.z = this.z+z1;
+        return this;
+    }
+
 
     public PlotLocation setY(Integer y) {
         this.y = y;
