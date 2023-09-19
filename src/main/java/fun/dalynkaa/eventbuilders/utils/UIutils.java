@@ -1,4 +1,4 @@
-package com.otsosity.spbuildrevrited.utils;
+package fun.dalynkaa.eventbuilders.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

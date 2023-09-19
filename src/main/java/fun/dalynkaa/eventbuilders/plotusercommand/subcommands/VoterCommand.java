@@ -1,23 +1,24 @@
-package com.dalynkaa.commands.mineusercommand.subcommands;
+package fun.dalynkaa.eventbuilders.plotusercommand.subcommands;
 
-import com.dalynkaa.MiningSimulator;
-import com.dalynkaa.commands.mineusercommand.SubCommand;
-import com.dalynkaa.utilities.dataClases.MineUser;
+import fun.dalynkaa.eventbuilders.EventBuilders;
+import fun.dalynkaa.eventbuilders.plotusercommand.SubCommand;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class DonateCommand extends SubCommand {
+public class VoterCommand extends SubCommand {
 
 
     @Override
     public String getName() {
-        return "donate";
+        return "voter";
     }
 
     @Override
@@ -32,68 +33,53 @@ public class DonateCommand extends SubCommand {
 
     @Override
     public void perform(Player player, String[] args) {
-        for (String a: args){
-            Bukkit.getLogger().info(a);
-        }
-        if (args.length<3){
+        if (args.length<2){
             return;
         }
-
-        if (Objects.equals(args[2], "add") && args.length == 4){
+        Component PREFIX = EventBuilders.getInstance().PREFIX;
+        if (Objects.equals(args[2], "set") && args.length == 3){
             try {
-                Integer count = Integer.parseInt(args[3]);
-                if (MineUser.fromName(args[0])==null){
-                    player.sendMessage(MiningSimulator.inst().format(MiningSimulator.inst().PREFIX+"игрок с таким ником не найден"));
+                if (PlotPlayer.fromUUID(Bukkit.getPlayerUniqueId(args[0]))==null){
+                    player.sendMessage(PREFIX.append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                            .append(Component.text("Игрок не найден ",TextColor.fromCSSHexString("#55efc4"))));
                     return;
                 }
-                MineUser user = MineUser.fromName(args[0]);
-                user.addDonate(count);
-                player.sendMessage(Component.text("Игроку добавлено ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(count+" Доната",TextColor.fromCSSHexString("#6c5ce7"))));
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-        }
-        if (Objects.equals(args[2], "set") && args.length == 4){
-            try {
-                Integer count = Integer.parseInt(args[3]);
-                if (MineUser.fromName(args[0])==null){
-                    player.sendMessage(MiningSimulator.inst().format(MiningSimulator.inst().PREFIX+"игрок с таким ником не найден"));
-                    return;
-                }
-                MineUser user = MineUser.fromName(args[0]);
-                user.setDonate(count);
-                player.sendMessage(Component.text("Игроку установлено ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(count+" Доната",TextColor.fromCSSHexString("#6c5ce7"))));
+                PlotPlayer user = PlotPlayer.fromUUID(Bukkit.getPlayerUniqueId(args[0]));
+                user.setVoter(true);
+                user.save(false);
+                ConsoleCommandSender commandSender = Bukkit.getServer().getConsoleSender();
+                String command = "lp user "+user.getName()+" parent add voter";
+                Bukkit.dispatchCommand(commandSender, command);
+                player.sendMessage(Component.text("Игроку ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(user.getName()+" выдано право голосовать",TextColor.fromCSSHexString("#6c5ce7"))));
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-        if (Objects.equals(args[2], "remove") && args.length == 4){
+        if (Objects.equals(args[2], "unset") && args.length == 3){
             try {
-                Integer count = Integer.parseInt(args[3]);
-                if (MineUser.fromName(args[0])==null){
-                    player.sendMessage(MiningSimulator.inst().format(MiningSimulator.inst().PREFIX+"игрок с таким ником не найден"));
+                if (PlotPlayer.fromUUID(Bukkit.getPlayerUniqueId(args[0]))==null){
+                    player.sendMessage(PREFIX.append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                            .append(Component.text("Игрок не найден ",TextColor.fromCSSHexString("#55efc4"))));
                     return;
                 }
-                MineUser user = MineUser.fromName(args[0]);
-                if (!user.hasMonney(count)) {
-                    player.sendMessage(MiningSimulator.inst().format(MiningSimulator.inst().PREFIX + "у игрока нету такого количества денег"));
-                    return;
-                }
-                user.removeDonate(count);
-                player.sendMessage(Component.text("У игрока убрано", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(count+" Доната",TextColor.fromCSSHexString("#6c5ce7"))));
+                PlotPlayer user = PlotPlayer.fromUUID(Bukkit.getPlayerUniqueId(args[0]));
+                user.setVoter(false);
+                user.save(false);
+                ConsoleCommandSender commandSender = Bukkit.getServer().getConsoleSender();
+                String command = "lp user "+user.getName()+" parent remove voter";
+                Bukkit.dispatchCommand(commandSender, command);
+                player.sendMessage(Component.text("Игроку ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(user.getName()+" убрано право голосовать",TextColor.fromCSSHexString("#6c5ce7"))));
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-        if (Objects.equals(args[2], "get") && args.length == 3){
+        if (Objects.equals(args[2], "list") && args.length == 3){
             try {
-                if (MineUser.fromName(args[0])==null){
-                    player.sendMessage(MiningSimulator.inst().format(MiningSimulator.inst().PREFIX+"игрок с таким ником не найден"));
+                if (PlotPlayer.fromUUID(Bukkit.getPlayerUniqueId(args[0]))==null){
+                    player.sendMessage(PREFIX.append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                            .append(Component.text("Игрок не найден ",TextColor.fromCSSHexString("#55efc4"))));
                     return;
                 }
-                MineUser user = MineUser.fromName(args[0]);
-                player.sendMessage(Component.text("У игрока ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(user.getDonate()+" Доната",TextColor.fromCSSHexString("#6c5ce7"))));
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -103,19 +89,7 @@ public class DonateCommand extends SubCommand {
     @Override
     public List<String> getSubcommandArguments(Player player, String[] args) {
         if (args.length == 3){
-            return Arrays.asList("add","set","get","remove");
-        }
-        if (Objects.equals(args[2], "add") && args.length == 4){
-            return Arrays.asList("<количество>");
-        }
-        if (Objects.equals(args[2], "set") && args.length == 4){
-            return Arrays.asList("<количество>");
-        }
-        if (Objects.equals(args[2], "remove") && args.length == 4){
-            return Arrays.asList("<количество>");
-        }
-        if (Objects.equals(args[2], "get") && args.length == 4){
-            return null;
+            return Arrays.asList("set","unset","list");
         }
         return null;
     }

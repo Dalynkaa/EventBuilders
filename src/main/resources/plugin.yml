@@ -2,4 +2,15 @@ name: EventBuilders
 version: '${project.version}'
 main: fun.dalynkaa.eventbuilders.EventBuilders
 api-version: 1.19
-load: STARTUP
+load: POSTWORLD
+soft-depend:
+  - ItemsAdder
+commands:
+  game:
+    aliases:
+      - sp
+  user:
+    permission: spbuild.admin
+permissions:
+  spbuild.admin:
+    description: Main

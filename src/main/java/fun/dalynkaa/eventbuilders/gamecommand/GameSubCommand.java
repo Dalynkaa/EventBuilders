@@ -1,4 +1,4 @@
-package com.otsosity.spbuildrevrited.commands.gamecommand;
+package fun.dalynkaa.eventbuilders.gamecommand;
 
 import org.bukkit.entity.Player;
 

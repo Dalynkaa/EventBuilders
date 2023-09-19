@@ -1,8 +1,13 @@
-package com.otsosity.spbuildrevrited.guis;
+package fun.dalynkaa.eventbuilders.guis;
 
+import com.destroystokyo.paper.Title;
 import com.iridium.iridiumcolorapi.IridiumColorAPI;
-import com.otsosity.spbuildrevrited.SpBuildRevrited;
-import com.otsosity.spbuildrevrited.utils.dataClasses.Game;
+
+import fun.dalynkaa.eventbuilders.EventBuilders;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.BuildGame;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.BuildPlot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.wesjd.anvilgui.AnvilGUI;
@@ -18,37 +23,50 @@ import java.util.Collections;
 public class AnvilGui {
     Component PREFIX;
     public AnvilGui(Player p, GuiType type){
-        this.PREFIX = SpBuildRevrited.getInstance().PREFIX;
-        if (type.equals(GuiType.THEMA_GUI)){
+        this.PREFIX = EventBuilders.getInstance().PREFIX;
+        if (type.equals(GuiType.THEMA_GUI)) {
             new AnvilGUI.Builder()
-                    .onComplete((completion) -> {                                    //called when the inventory output slot is clicked
-                        completion.getPlayer().sendMessage(PREFIX
+                    .onClick((slot, stateSnapshot) -> {
+                        if (!slot.equals(AnvilGUI.Slot.OUTPUT)){
+                            return Collections.singletonList(AnvilGUI.ResponseAction.close());
+                        }
+                        stateSnapshot.getPlayer().sendMessage(PREFIX
+                                .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                 .append(Component.text("Тема выбрана", TextColor.fromCSSHexString("#55efc4"))));
-                        return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()-> {
-                            Game game = Game.getCurrentGame();
-                            game.setThema(completion.getText());
-                            game.save(true);
-                            game.createWorldStage(completion.getPlayer());
-
-                        }));
+                        Game game = Game.getCurrentGame();
+                        game.setThema(stateSnapshot.getText());
+                        game.save(true);
+                        if (game instanceof BuildGame) {
+                            ((BuildGame) game).createWorldStage(stateSnapshot.getPlayer());
+                        } else {
+                            stateSnapshot.getPlayer().sendMessage("This game is not a BuildGame. Type: " + game.getClass().getSimpleName());
+                        }
+                        return Arrays.asList(AnvilGUI.ResponseAction.close());
                     })
                     .interactableSlots(AnvilGUI.Slot.INPUT_RIGHT)
                     .text("Не указано")
                     .itemLeft(new ItemStack(Material.PAPER))
                     .title("[Шаг 1] Тема ивента")
-                    .plugin(SpBuildRevrited.getInstance())
+                    .plugin(EventBuilders.getInstance())
                     .open(p);
             return;
         }else if (type.equals(GuiType.PLOT_COUNT_GUI)){
             new AnvilGUI.Builder()
-                    .onComplete((completion) -> {                                    //called when the inventory output slot is clicked
-                        completion.getPlayer().sendMessage(PREFIX
+                    .onClick((slot, stateSnapshot) -> {
+                        if (!slot.equals(AnvilGUI.Slot.OUTPUT)){
+                            return Collections.singletonList(AnvilGUI.ResponseAction.close());
+                        }
+                        stateSnapshot.getPlayer().sendMessage(PREFIX
+                                        .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                 .append(Component.text("Количество плотов установленно!", TextColor.fromCSSHexString("#55efc4"))));
                         Game game = Game.getCurrentGame();
                         try {
-                            game.plotCreateStage(completion.getPlayer(),Integer.parseInt(completion.getText()));
+                            game.setPlotCount(Integer.parseInt(stateSnapshot.getText()));
+                            game.save(false);
+                            ((BuildGame) game).plotCreateStage(stateSnapshot.getPlayer(),Integer.parseInt(stateSnapshot.getText()));
                         }catch (NumberFormatException e){
-                            completion.getPlayer().sendMessage(PREFIX
+                            stateSnapshot.getPlayer().sendMessage(PREFIX
+                                            .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                     .append(Component.text("Нужны только цифры!!!", TextColor.fromCSSHexString("#ef4c00"))));
                             return Collections.singletonList(AnvilGUI.ResponseAction.replaceInputText("0"));
                         }
@@ -58,72 +76,103 @@ public class AnvilGui {
                     .text("0")
                     .itemLeft(new ItemStack(Material.PAPER))
                     .title("[Шаг 3] Количество плотов")
-                    .plugin(SpBuildRevrited.getInstance())
+                    .plugin(EventBuilders.getInstance())
                     .open(p);
             return;
         }else if (type.equals(GuiType.PLOT_SIZE_GUI)){
             new AnvilGUI.Builder()
-                    .onComplete((completion) -> {                                    //called when the inventory output slot is clicked
-                        completion.getPlayer().sendMessage(PREFIX
+                    .onClick((slot, stateSnapshot) -> {
+                        if (!slot.equals(AnvilGUI.Slot.OUTPUT)){
+                            return Collections.singletonList(AnvilGUI.ResponseAction.close());
+                        }//called when the inventory output slot is clicked
+                        stateSnapshot.getPlayer().sendMessage(PREFIX
+                                        .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                 .append(Component.text("Размер плотов установлено!", TextColor.fromCSSHexString("#55efc4"))));
                         Game game = Game.getCurrentGame();
                         try {
-                            game.setPlotSize(Integer.parseInt(completion.getText()));
+                            game.setPlotSize(Integer.parseInt(stateSnapshot.getText()));
                         }catch (NumberFormatException exception){
-                            completion.getPlayer().sendMessage(PREFIX
+                            stateSnapshot.getPlayer().sendMessage(PREFIX
+                                            .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                     .append(Component.text("Нужны только цифры!!!", TextColor.fromCSSHexString("#ef4c00"))));
                             return Arrays.asList(AnvilGUI.ResponseAction.replaceInputText("0"));
                         }
                         game.save(false);
                         return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()->{
-                            new AnvilGui(completion.getPlayer(),GuiType.PLOT_COUNT_GUI);
+                            new AnvilGui(stateSnapshot.getPlayer(),GuiType.PLOT_COUNT_GUI);
                         }));
                     })
                     .interactableSlots(AnvilGUI.Slot.INPUT_RIGHT)
                     .text("0")
                     .itemLeft(new ItemStack(Material.PAPER))
                     .title("[Шаг 2] Размер плота")
-                    .plugin(SpBuildRevrited.getInstance())
+                    .plugin(EventBuilders.getInstance())
                     .open(p);
             return;
         }else if (type.equals(GuiType.GAME_TIME_GUI)){
             new AnvilGUI.Builder()
-                    .onComplete((completion) -> {                                    //called when the inventory output slot is clicked
-                        completion.getPlayer().sendMessage(PREFIX
+                    .onClick((slot, stateSnapshot) -> {
+                        if (!slot.equals(AnvilGUI.Slot.OUTPUT)){
+                            return Collections.singletonList(AnvilGUI.ResponseAction.close());
+                        }//called when the inventory output slot is clicked
+                        stateSnapshot.getPlayer().sendMessage(PREFIX
+                                        .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                                 .append(Component.text("Время игры выбрано!", TextColor.fromCSSHexString("#55efc4"))));
-                        return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()-> {
-                            Game game = Game.getCurrentGame();
-                            game.setThema(completion.getText());
+                        Game game = Game.getCurrentGame();
+                        try {
+                            game.setGameTime(Integer.parseInt(stateSnapshot.getText())*60);
                             game.save(false);
-                            game.createWorldStage(completion.getPlayer());
+                        }catch (NumberFormatException exception){
+                            stateSnapshot.getPlayer().sendMessage(PREFIX
+                                            .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                                    .append(Component.text("Нужны только цифры!!!", TextColor.fromCSSHexString("#ef4c00"))));
+                            return Arrays.asList(AnvilGUI.ResponseAction.replaceInputText("0"));
+                        }
 
+                        return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()->{
+                            ((BuildGame) game).startGameStage(stateSnapshot.getPlayer());
+                            game.save(false);
                         }));
                     })
                     .interactableSlots(AnvilGUI.Slot.INPUT_RIGHT)
                     .text("0")
                     .itemLeft(new ItemStack(Material.CLOCK))
-                    .title("Время на постройку")
-                    .plugin(SpBuildRevrited.getInstance())
+                    .title("Время на постройку(минуты)")
+                    .plugin(EventBuilders.getInstance())
                     .open(p);
             return;
-        }else if (type.equals(GuiType.RESOURCE_TIME_GUI)){
+        }else if (type.equals(GuiType.GAME_TIME_ADD_GUI)){
             new AnvilGUI.Builder()
-                    .onComplete((completion) -> {                                    //called when the inventory output slot is clicked
-                        completion.getPlayer().sendMessage(PREFIX
-                                .append(Component.text("Время на сбор установлено", TextColor.fromCSSHexString("#55efc4"))));
-                        return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()-> {
-                            Game game = Game.getCurrentGame();
-                            game.setThema(completion.getText());
+                    .onClick((slot, stateSnapshot) -> {
+                        if (!slot.equals(AnvilGUI.Slot.OUTPUT)){
+                            return Collections.singletonList(AnvilGUI.ResponseAction.close());
+                        }//called when the inventory output slot is clicked
+                        stateSnapshot.getPlayer().sendMessage(PREFIX
+                                .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                                .append(Component.text("Время игры добавленно!", TextColor.fromCSSHexString("#55efc4"))));
+                        Game game = Game.getCurrentGame();
+                        try {
+                            game.setGameTime(game.getGameTime()+Integer.parseInt(stateSnapshot.getText())*60);
+                            for(PlotPlayer plotPlayer: PlotPlayer.getOnlinePlotPlayers(true)){
+                                plotPlayer.getPlayer().sendTitle(Title.builder().title("Время на строительтво добавленно!").subtitle("Вы успеете достроить").build());
+                            }
                             game.save(false);
-                            game.createWorldStage(completion.getPlayer());
+                        }catch (NumberFormatException exception){
+                            stateSnapshot.getPlayer().sendMessage(PREFIX
+                                    .append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
+                                    .append(Component.text("Нужны только цифры!!!", TextColor.fromCSSHexString("#ef4c00"))));
+                            return Arrays.asList(AnvilGUI.ResponseAction.replaceInputText("0"));
+                        }
 
+                        return Arrays.asList(AnvilGUI.ResponseAction.close(),AnvilGUI.ResponseAction.run(()->{
+                            game.save(false);
                         }));
                     })
                     .interactableSlots(AnvilGUI.Slot.INPUT_RIGHT)
                     .text("0")
                     .itemLeft(new ItemStack(Material.CLOCK))
-                    .title("Время на сбор ресурсов")
-                    .plugin(SpBuildRevrited.getInstance())
+                    .title("Сколько времени добавить(минуты)")
+                    .plugin(EventBuilders.getInstance())
                     .open(p);
             return;
         }
@@ -135,7 +184,7 @@ public class AnvilGui {
     public enum GuiType{
         THEMA_GUI,
         GAME_TIME_GUI,
-        RESOURCE_TIME_GUI,
+        GAME_TIME_ADD_GUI,
         PLOT_SIZE_GUI,
         PLOT_COUNT_GUI
     }

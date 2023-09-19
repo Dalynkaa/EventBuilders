@@ -1,9 +1,8 @@
 package fun.dalynkaa.eventbuilders.utils.UsableClasses;
 
-
 import org.bukkit.event.Event;
 
-public interface IInventoryButton<T extends Event> {
+public interface IKickButton<T extends Event> {
     /**
      * Executes the event passed to it
      *
