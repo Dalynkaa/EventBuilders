@@ -26,20 +26,20 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class BuildGame extends Game{
-    public BuildGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame) {
-        super(gameId, gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame);
+    public BuildGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
+        super(gameId, gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame, latest);
     }
 
-    public BuildGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame) {
-        super(gameId, gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame);
+    public BuildGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame, Boolean latest) {
+        super(gameId, gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame, latest);
     }
 
-    public BuildGame(GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame) {
-        super(gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame);
+    public BuildGame(GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
+        super(gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame, latest);
     }
 
-    public BuildGame(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame) {
-        super(gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame);
+    public BuildGame(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame, Boolean latest) {
+        super(gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame, latest);
     }
 
     public BuildGame(GameType gameType, GameStage gameStage, String thema) {
@@ -127,6 +127,7 @@ public class BuildGame extends Game{
     }
     public void startGameStage(Player player){
         setGameStage(GameStage.GAME);
+        setLatest(true);
         save(false);
         Component PREFIX = EventBuilders.getInstance().PREFIX;
         player.sendMessage(PREFIX.append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
@@ -232,20 +233,16 @@ public class BuildGame extends Game{
     }
     public boolean checkPlayerJoin(UUID uuid, Game game, PlotPlayer plotPlayer){
         if (game.getGameStage().getType()<=3){
-            Bukkit.getLogger().info("1.2");
             return true;
         }
         if (plotPlayer.isInGame()){
-            Bukkit.getLogger().info("1.3");
             return true;
         }
         if (plotPlayer.canJoin() == false){
-            Bukkit.getLogger().info("1.5");
             return true;
         }
         List<Plot> plots = Plot.getAllPlots(game.getGameId(), false);
         if (Bukkit.getOnlinePlayers().size() < 100 && !Objects.requireNonNull(plots).isEmpty()&&EventBuilders.getInstance().newCanJoin&&game.getGameStage().equals(GameStage.GAME)&&plotPlayer.canJoin()){
-            Bukkit.getLogger().info("1.4");
             return true;
         }
         return false;

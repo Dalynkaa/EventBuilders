@@ -14,9 +14,7 @@ import com.sk89q.worldguard.protection.flags.RegionGroup;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.managers.storage.StorageException;
-import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import fun.dalynkaa.eventbuilders.EventBuilders;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.DonateSkin;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.GameType;
@@ -25,9 +23,8 @@ import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotLocation;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotVote;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,7 +43,7 @@ public class Plot {
     private RegionManager regions;
     private Integer pointSum;
 
-    public Plot(UUID gameId,Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner,Boolean isGenerated, Boolean latest) {
+    public Plot(UUID gameId,Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner,Boolean isGenerated, Boolean latest, Integer pointSum) {
         this.plot_id = UUID.randomUUID();
         this.plotPosition = plotPosition;
         this.stageId = stageId;
@@ -57,10 +54,10 @@ public class Plot {
         this.latest = latest;
         this.regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(getPos1().getWorld()));
         this.isGenerated = isGenerated;
-        this.pointSum = 0;
+        this.pointSum = pointSum;
 
     }
-    public Plot(UUID plot_id, Integer plotPosition, Integer stageId,UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner,Boolean isGenerated, Boolean latest) {
+    public Plot(UUID plot_id, Integer plotPosition, Integer stageId,UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner,Boolean isGenerated, Boolean latest, Integer pointSum) {
         this.plot_id = plot_id;
         this.plotPosition = plotPosition;
         this.stageId = stageId;
@@ -70,7 +67,7 @@ public class Plot {
         this.owner = owner;
         this.isGenerated = isGenerated;
         this.latest = latest;
-        this.pointSum = 0;
+        this.pointSum = pointSum;
     }
     public Boolean isGenerated() {
         return isGenerated;
@@ -193,8 +190,9 @@ public class Plot {
             }
             UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
             Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
+            Integer pointSum1 = resultSet.getInt("pointSum");
             Boolean result_latest = resultSet.getBoolean("latest");
-            return new Plot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
+            return new Plot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
         }catch (SQLException e){
             e.printStackTrace();
             return null;
@@ -222,11 +220,12 @@ public class Plot {
             }
             UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
             Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
+            Integer pointSum1 = resultSet.getInt("pointSum");
             Boolean result_latest = resultSet.getBoolean("latest");
             if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                lat = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
+                lat = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
             }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                lat = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
+                lat = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
             }
             return lat;
         }catch (Exception e){
@@ -249,11 +248,12 @@ public class Plot {
             }
             UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
             Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
+            Integer pointSum1 = resultSet.getInt("pointSum");
             Boolean result_latest = resultSet.getBoolean("latest");
             if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                lat = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
+                lat = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
             }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                lat = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
+                lat = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
             }
             return lat;
         }catch (Exception e){
@@ -368,128 +368,76 @@ public class Plot {
     }
     public static List<Plot> getAllPlots(UUID game_id){
         try {
-            List<Plot> res = new ArrayList<>();
             ResultSet resultSet = EventBuilders.getInstance().db.getAllPlotsByGame(game_id);
-            while (resultSet.next()){
-                UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
-                Integer result_position = resultSet.getInt("plotPosition");
-                Integer result_stageId = resultSet.getInt("stageId");
-                PlotLocation result_location1 = PlotLocation.fromJson(resultSet.getString("location1"));
-                PlotLocation result_location2 = PlotLocation.fromJson(resultSet.getString("location2"));
-                UUID result_owner = null;
-                if (resultSet.getString("owner") != null){
-                    result_owner = UUID.fromString(resultSet.getString("owner"));
-                }
-                UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
-                Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
-                Boolean result_latest = resultSet.getBoolean("latest");
-                Plot p = null;
-                if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                    p = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                    p = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }
-                res.add(p);
-            }
-            return res;
+            return getPlots(resultSet);
         }catch (SQLException e){
-            e.printStackTrace();
             return null;
         }
     }
     public static List<Plot> getAllPlots(UUID game_id, Boolean claimed){
         try {
-            List<Plot> res = new ArrayList<>();
             ResultSet resultSet = EventBuilders.getInstance().db.getAllPlotsByGame(game_id, claimed);
-            while (resultSet.next()){
-                UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
-                Integer result_position = resultSet.getInt("plotPosition");
-                Integer result_stageId = resultSet.getInt("stageId");
-                PlotLocation result_location1 = PlotLocation.fromJson(resultSet.getString("location1"));
-                PlotLocation result_location2 = PlotLocation.fromJson(resultSet.getString("location2"));
-                UUID result_owner = null;
-                if (resultSet.getString("owner") != null){
-                    result_owner = UUID.fromString(resultSet.getString("owner"));
-                }
-                UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
-                Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
-                Boolean result_latest = resultSet.getBoolean("latest");
-                Plot p = null;
-                if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                    p = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                    p = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }
-                res.add(p);
-            }
-            return res;
+            return getPlots(resultSet);
         }catch (SQLException e){
-            e.printStackTrace();
             return null;
         }
     }
     public static List<Plot> getAllPlots(UUID game_id, Boolean claimed, Boolean generated){
         try {
-            List<Plot> res = new ArrayList<>();
             ResultSet resultSet = EventBuilders.getInstance().db.getAllPlotsByGame(game_id, claimed, generated);
-            while (resultSet.next()){
-                UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
-                Integer result_position = resultSet.getInt("plotPosition");
-                Integer result_stageId = resultSet.getInt("stageId");
-                PlotLocation result_location1 = PlotLocation.fromJson(resultSet.getString("location1"));
-                PlotLocation result_location2 = PlotLocation.fromJson(resultSet.getString("location2"));
-                UUID result_owner = null;
-                if (resultSet.getString("owner") != null){
-                    result_owner = UUID.fromString(resultSet.getString("owner"));
-                }
-                UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
-                Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
-                Boolean result_latest = resultSet.getBoolean("latest");
-                Plot p = null;
-                if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                    p = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                    p = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }
-                res.add(p);
-            }
-            return res;
+            return getPlots(resultSet);
         }catch (SQLException e){
-            e.printStackTrace();
             return null;
         }
     }
+
+    @NotNull
+    private static List<Plot> getPlots(ResultSet resultSet) throws SQLException {
+        List<Plot> res = new ArrayList<>();
+        while (resultSet.next()){
+            Plot p = plotStartament(resultSet);
+            res.add(p);
+        }
+        return res;
+    }
+
+    private static Plot plotStartament(ResultSet resultSet) throws SQLException {
+        UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
+        Integer result_position = resultSet.getInt("plotPosition");
+        Integer result_stageId = resultSet.getInt("stageId");
+        PlotLocation result_location1 = PlotLocation.fromJson(resultSet.getString("location1"));
+        PlotLocation result_location2 = PlotLocation.fromJson(resultSet.getString("location2"));
+        UUID result_owner = null;
+        if (resultSet.getString("owner") != null){
+            result_owner = UUID.fromString(resultSet.getString("owner"));
+        }
+        UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
+        Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
+        Integer pointSum1 = resultSet.getInt("pointSum");
+        Boolean result_latest = resultSet.getBoolean("latest");
+        Plot p = null;
+        if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
+            p = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2, PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
+        }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
+            p = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest, pointSum1);
+        }
+        return p;
+    }
+
     public static List<Plot> getAllPlots(UUID game_id, Boolean claimed, VoteFilter filter, PlotPlayer plotPlayer){
         try {
-            List<Plot> res = new ArrayList<>();
             ResultSet resultSet = EventBuilders.getInstance().db.getAllPlotsByGame(game_id, claimed);
+            List<Plot> res = new ArrayList<>();
             while (resultSet.next()){
-                UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
-                Integer result_position = resultSet.getInt("plotPosition");
-                Integer result_stageId = resultSet.getInt("stageId");
-                PlotLocation result_location1 = PlotLocation.fromJson(resultSet.getString("location1"));
-                PlotLocation result_location2 = PlotLocation.fromJson(resultSet.getString("location2"));
-                UUID result_owner = null;
-                if (resultSet.getString("owner") != null){
-                    result_owner = UUID.fromString(resultSet.getString("owner"));
-                }
-                UUID result_plot_id = UUID.fromString(resultSet.getString("plot_id"));
-                Boolean isGenerated1 = resultSet.getBoolean("isGenerated");
-                Boolean result_latest = resultSet.getBoolean("latest");
-                Plot p = null;
-                if (Game.getCurrentGame().getGameType().equals(GameType.NORMAL)){
-                    p = new BuildPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }else if (Game.getCurrentGame().getGameType().equals(GameType.SKINS)){
-                    p = new SkinPlot(result_plot_id, result_position, result_stageId,result_gameId,result_location1,result_location2,PlotPlayer.fromUUID(result_owner),isGenerated1,result_latest);
-                }
+                Plot p = plotStartament(resultSet);
                 if (filter.equals(VoteFilter.NORMAL)){
                     res.add(p);
                 } else if (filter.equals(VoteFilter.NO_VOTE)) {
-                    if (PlotVote.playerHasVoteOfPlot(plotPlayer,p,game_id) == false){
+                    if (!PlotVote.playerHasVoteOfPlot(plotPlayer, p, game_id)){
                         res.add(p);
                     }
                 } else if (filter.equals(VoteFilter.VOTED)) {
-                    if (PlotVote.playerHasVoteOfPlot(plotPlayer,p,game_id) == true){
+                    if (PlotVote.playerHasVoteOfPlot(plotPlayer, p, game_id)){
                         res.add(p);
                     }
                 }
@@ -497,7 +445,6 @@ public class Plot {
             }
             return res;
         }catch (SQLException e){
-            e.printStackTrace();
             return null;
         }
     }

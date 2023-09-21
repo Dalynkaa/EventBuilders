@@ -1,14 +1,15 @@
 package fun.dalynkaa.eventbuilders.guis;
 
+
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.VoteFilter;
-import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
-import fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotVote;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.GameMode;
@@ -18,63 +19,45 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
-public class LastGameGui {
+public class PlotListGui {
     PaginatedGui gui;
-    public LastGameGui(VoteFilter filter, PlotPlayer plotPlayer){
-        Game game = Game.getGameById("6b09dcd0-c00a-40f3-b369-48dcac54f4d5");
+    public PlotListGui(VoteFilter filter, Game game, PlotPlayer plotPlayer, GuiType type){
         gui = Gui.paginated()
-                .title(Component.text("Список игроков"))
+                .title(Component.text("Топ плотов - ", TextColor.fromCSSHexString("#e17055")).append(Component.text(game.getThema(), TextColor.fromCSSHexString("#6c5ce7"))))
                 .rows(6)
                 .pageSize(36)
                 .disableAllInteractions()
                 .create();
-        List<Plot> plots;
-        HashMap<UUID,ArrayList<PlotVote>> plotListHashMap;
-        plots = Plot.getAllPlots(game.getGameId(), true, filter, plotPlayer);
-        plotListHashMap = PlotVote.getGameVotes(game);
-
-        List<Plot> forSort = new ArrayList<>();
-
-        for (Plot plot: plots){
-            if (plotListHashMap.containsKey(plot.getPlotId())) {
-                List<PlotVote> votes = plotListHashMap.get(plot.getPlotId());
-                Integer summ = 0;
-                for (PlotVote plotVote : votes) {
-                    summ += plotVote.getType();
-                }
-                forSort.add(plot.setPointSum(summ));
-            }
-        }
-        forSort.sort(Comparator.comparingDouble(Plot::getPointSum).reversed());
-
-
-        for (Plot plot: forSort){
+        List<Plot> plots = Plot.getAllPlots(game.getGameId(), true, filter, plotPlayer);
+        Collections.sort(plots, Comparator.comparingDouble(Plot::getPointSum).reversed());
+        for (Plot plot : plots) {
+            List<PlotVote> votes = PlotVote.getPlotVotes(game, plot);
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text("ПКМ - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text("телепорт", TextColor.fromCSSHexString("#6c5ce7"))));
-            if (plotListHashMap.containsKey(plot.getPlotId())){
-                List<PlotVote> votes = plotListHashMap.get(plot.getPlotId());
-                Integer summ = 0;
-                for (PlotVote plotVote: votes){
-                    summ+=plotVote.getType();
-                    lore.add(Component.text(plotVote.getVoter().getName() + " - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(plotVote.getType(), TextColor.fromCSSHexString("#6c5ce7"))));
-                }
-                lore.add(Component.text("Cумма" + " - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(summ, TextColor.fromCSSHexString("#6c5ce7"))));
+            if (type.equals(GuiType.END_GAME)) {
+                lore.add(Component.text("ЛКМ - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text("телепорт игрока сюда", TextColor.fromCSSHexString("#6c5ce7"))));
             }
+            if (type.equals(GuiType.END_GAME)) {
+                for (PlotVote vote : votes) {
+                    lore.add(Component.text(vote.getVoter().getName() + " - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(vote.getType(), TextColor.fromCSSHexString("#6c5ce7"))));
+                }
+            }
+            lore.add(Component.text("Сумма - ", TextColor.fromCSSHexString("#a29bfe")).append(Component.text(plot.getPointSum(), TextColor.fromCSSHexString("#6c5ce7"))));
             GuiItem item = ItemBuilder.skull()
                     .owner(plot.getPlotPlayer().getOfflinePlayer())
                     .name(Component.text("Плот - ", TextColor.fromCSSHexString("#BA68C8"))
                             .append(Component.text(plot.getPlotPlayer().getOfflinePlayer().getName(), TextColor.fromCSSHexString("#8E24AA"))))
                     .lore(lore)
                     .asGuiItem((event -> {
-                        Player player = (Player) event.getWhoClicked();
-                        PlotPlayer player1 = PlotPlayer.fromUUID(player.getUniqueId());
-                        player.teleport(plot.getPlotCenter().getLocation());
-                        if (player1.isAdmin() || player1.isVoter()){
+                        if (event.isRightClick()){
+                            Player player = (Player) event.getWhoClicked();
+                            player.teleport(plot.getPlotCenter().getLocation());
                             player.setGameMode(GameMode.CREATIVE);
-                        }else {
-                            player.setGameMode(GameMode.SPECTATOR);
+                            event.getInventory().close();
+                        } else if (event.isLeftClick() && type.equals(GuiType.END_GAME)){
+                            PlotPlayer player = plot.getPlotPlayer();
+                            player.getPlayer().teleport(event.getWhoClicked().getLocation());
                         }
-                        event.getInventory().close();
                     }));
             gui.addItem(item);
         }
@@ -90,7 +73,7 @@ public class LastGameGui {
                 .lore(Component.text("Текущий фильтр - ",TextColor.fromCSSHexString("#a29bfe")).append(Component.text(filter.getName(),TextColor.fromCSSHexString("#6c5ce7"))))
                 .asGuiItem(event -> {
                     event.getInventory().close();
-                    VoteListGui voteListGui = new VoteListGui(filter.next(), game, plotPlayer);
+                    PlotListGui voteListGui = new PlotListGui(filter.next(), game, plotPlayer, type);
                     voteListGui.open(event.getWhoClicked());
                 }));
         gui.setItem(53, ItemBuilder
@@ -98,8 +81,12 @@ public class LastGameGui {
                 .texture("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjM5NTExOWRkNTIwMWEyNDJiODZiNDg2NmQ2ZjA0NTQxYjAwYjkyZWJkZDU3Y2UyNzkxOWZiNWYxMDJhNmRkZCJ9fX0=")
                 .name(Component.text("Следуйщая страница"))
                 .asGuiItem(event -> gui.next()));
+
     }
     public void open(HumanEntity p){
         gui.open(p);
+    }
+    public enum GuiType{
+        END_GAME, NORMAL
     }
 }

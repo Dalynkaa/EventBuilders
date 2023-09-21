@@ -20,12 +20,12 @@ import java.util.UUID;
 
 public class BuildPlot extends Plot{
     private boolean buildLatest;
-    public BuildPlot(UUID gameId, Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest) {
-        super(gameId, plotPosition, stageId, pos1, pos2, owner, isGenerated, latest);
+    public BuildPlot(UUID gameId, Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest, Integer pointSum) {
+        super(gameId, plotPosition, stageId, pos1, pos2, owner, isGenerated, latest, pointSum);
     }
 
-    public BuildPlot(UUID plot_id, Integer plotPosition, Integer stageId, UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest) {
-        super(plot_id, plotPosition, stageId, gameId, pos1, pos2, owner, isGenerated, latest);
+    public BuildPlot(UUID plot_id, Integer plotPosition, Integer stageId, UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest, Integer pointSum) {
+        super(plot_id, plotPosition, stageId, gameId, pos1, pos2, owner, isGenerated, latest, pointSum);
     }
     public void fill(boolean fillCorners, boolean fillBottom, boolean fillWalls){
         if (fillBottom){
@@ -63,14 +63,14 @@ public class BuildPlot extends Plot{
         Location pos2 = new Location(game.getWorld(),game.getPlotSize(),Y,game.getPlotSize());
 
         if (latestPlot == null){
-            Plot plot = new Plot(game.getGameId(), 1, 1,PlotLocation.fromLocation(pos1),PlotLocation.fromLocation(pos2),null,false,true);
+            Plot plot = new Plot(game.getGameId(), 1, 1,PlotLocation.fromLocation(pos1),PlotLocation.fromLocation(pos2),null,false,true, 0);
             plot.setLatest(true);
             EventBuilders.getInstance().plotHach.add(plot);
             plot.save();
             //plot.fill(Material.MUD_BRICK_SLAB);
             return;
         }
-        Plot plot = new Plot(game.getGameId(), latestPlot.getPlotPosition()+1, 1, latestPlot.getPos1().setY(Y).next(game),latestPlot.getPos2().setY(Y).next(game),null,false,true);
+        Plot plot = new Plot(game.getGameId(), latestPlot.getPlotPosition()+1, 1, latestPlot.getPos1().setY(Y).next(game),latestPlot.getPos2().setY(Y).next(game),null,false,true, 0);
         plot.setLatest(true);
         EventBuilders.getInstance().plotHach.add(plot);
         plot.save();

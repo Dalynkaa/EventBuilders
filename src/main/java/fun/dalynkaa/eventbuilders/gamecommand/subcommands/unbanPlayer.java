@@ -38,10 +38,8 @@ public class unbanPlayer extends GameSubCommand {
         if (args.length <=1){
             return;
         }
-        Bukkit.getLogger().info("0.5");
         PlotPlayer tpPlayer = PlotPlayer.fromUUID(Bukkit.getOfflinePlayer(args[1]).getUniqueId());
         if (tpPlayer!=null){
-            Bukkit.getLogger().info("1");
             tpPlayer.setHasBan(false);
             tpPlayer.setCanJoin(true);
             tpPlayer.save(false);

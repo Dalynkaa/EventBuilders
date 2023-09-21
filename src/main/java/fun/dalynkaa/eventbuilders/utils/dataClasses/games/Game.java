@@ -15,6 +15,7 @@ import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.GameStage;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.GameType;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotVote;
+import fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
@@ -39,10 +40,9 @@ public class Game {
     private String shema_name;
     private Boolean use_schema;
     private Boolean currentGame;
+    private Boolean latest;
 
-
-
-    public Game(UUID gameId, GameType gameType,GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame) {
+    public Game(UUID gameId, GameType gameType,GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
         this.game_id = gameId;
         this.game_type = gameType;
         this.game_stage = gameStage;
@@ -54,8 +54,9 @@ public class Game {
         this.shema_name = shemaName;
         this.use_schema = useSchema;
         this.currentGame = currentGame;
+        this.latest = latest;
     }
-    public Game(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count,Boolean currentGame) {
+    public Game(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count,Boolean currentGame , Boolean latest) {
         this.game_id = gameId;
         this.game_type = gameType;
         this.game_stage = gameStage;
@@ -67,8 +68,9 @@ public class Game {
         this.shema_name = null;
         this.use_schema = false;
         this.currentGame = currentGame;
+        this.latest = latest;
     }
-    public Game(GameType gameType,GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize,Integer plot_count , String shemaName, Boolean useSchema, Boolean currentGame) {
+    public Game(GameType gameType,GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize,Integer plot_count , String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
         this.game_id = UUID.randomUUID();
         this.game_type = gameType;
         this.game_stage = gameStage;
@@ -80,8 +82,9 @@ public class Game {
         this.shema_name = shemaName;
         this.use_schema = useSchema;
         this.currentGame = currentGame;
+        this.latest = latest;
     }
-    public Game(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame) {
+    public Game(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame, Boolean latest) {
         this.game_id = UUID.randomUUID();
         this.game_type = gameType;
         this.game_stage = gameStage;
@@ -93,6 +96,7 @@ public class Game {
         this.shema_name = null;
         this.use_schema = false;
         this.currentGame = currentGame;
+        this.latest = latest;
     }
     public Game(GameType gameType, GameStage gameStage, String thema) {
         this.game_id = UUID.randomUUID();
@@ -106,6 +110,7 @@ public class Game {
         this.shema_name = null;
         this.use_schema = false;
         this.currentGame = false;
+        this.latest = false;
     }
 
     public Game setGameId(UUID game_id) {
@@ -120,6 +125,20 @@ public class Game {
         } else if (game_type.equals(GameType.SKINS)) {
             EventBuilders.getInstance().currentGame = new SkinGame(GameType.SKINS, GameStage.SKIN_NO_GAME, "Не задано");
         }
+        return this;
+    }
+
+    public Boolean getLatest() {
+        return latest;
+    }
+
+    public Game setLatest(Boolean latest) {
+        if (latest) {
+            if (Game.getLatestGame()!=null){
+                Game.getLatestGame().setLatest(false).save(false);
+            }
+        }
+        this.latest = latest;
         return this;
     }
 
@@ -284,10 +303,11 @@ public class Game {
             String result_schemaName = resultSet.getString("schema_name");
             Boolean result_useSchema = resultSet.getBoolean("use_schema");
             Boolean result_currentGame = resultSet.getBoolean("current_game");
+            Boolean result_last = resultSet.getBoolean("latest");
             if (result_gameType.equals(GameType.SKINS)){
-                EventBuilders.getInstance().currentGame = new SkinGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame);
+                EventBuilders.getInstance().currentGame = new SkinGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame,result_last);
             }else if (result_gameType.equals(GameType.NORMAL)){
-                EventBuilders.getInstance().currentGame = new BuildGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame);
+                EventBuilders.getInstance().currentGame = new BuildGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame,result_last);
             }
             return EventBuilders.getInstance().currentGame;
         }catch (SQLException e){
@@ -295,6 +315,32 @@ public class Game {
                 EventBuilders.getInstance().currentGame = new Game(GameType.NORMAL,GameStage.NO_GAME,"Не задано");
             }
             return EventBuilders.getInstance().currentGame;
+        }
+    }
+    public static Game getLatestGame(){
+        ResultSet resultSet = EventBuilders.getInstance().db.getLatestGame();
+        try {
+            UUID result_gameId = UUID.fromString(resultSet.getString("game_id"));
+            GameType result_gameType = GameType.valueOf(resultSet.getString("game_type"));
+            GameStage result_gameStage = GameStage.valueOf(resultSet.getString("game_stage"));
+            Integer result_gameTime = resultSet.getInt("game_time");
+            Integer result_resourceTime = resultSet.getInt("resource_time");
+            String result_thema = resultSet.getString("thema");
+            Integer result_plotSize = resultSet.getInt("plot_size");
+            Integer result_plotCount = resultSet.getInt("plot_count");
+            String result_schemaName = resultSet.getString("schema_name");
+            Boolean result_useSchema = resultSet.getBoolean("use_schema");
+            Boolean result_currentGame = resultSet.getBoolean("current_game");
+            Boolean result_last = resultSet.getBoolean("latest");
+            Game result;
+            if (result_gameType.equals(GameType.NORMAL)){
+                result = EventBuilders.getInstance().currentGame = new BuildGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame,result_last);
+            }else {
+                result = null;
+            }
+            return result;
+        }catch (SQLException e){
+            return null;
         }
     }
     public static Game getGameById(String id){
@@ -311,12 +357,13 @@ public class Game {
             String result_schemaName = resultSet.getString("schema_name");
             Boolean result_useSchema = resultSet.getBoolean("use_schema");
             Boolean result_currentGame = resultSet.getBoolean("current_game");
+            Boolean result_last = resultSet.getBoolean("latest");
             if (result_gameType.equals(GameType.SKINS)){
-                return new SkinGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame);
+                return new SkinGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame,result_last);
             }else if (result_gameType.equals(GameType.NORMAL)){
-                return  new BuildGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame);
+                return  new BuildGame(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame,result_last);
             }else {
-                return new Game(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame);
+                return new Game(result_gameId,result_gameType,result_gameStage,result_gameTime,result_resourceTime,result_thema,result_plotSize, result_plotCount,result_schemaName,result_useSchema,result_currentGame, result_last);
             }
         }catch (SQLException e){
             e.printStackTrace();

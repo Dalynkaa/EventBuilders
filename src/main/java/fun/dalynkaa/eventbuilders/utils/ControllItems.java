@@ -105,7 +105,6 @@ public class ControllItems {
                         if (misklickList.contains(player.getUniqueId())){
                             return;
                         }
-                        Bukkit.getLogger().info("click");
                         PlotPlayer plotPlayer = PlotPlayer.fromUUID(player.getUniqueId());
                         misklickList.add(player.getUniqueId());
                         plotPlayer.setStage(plotPlayer.getStage()+1);

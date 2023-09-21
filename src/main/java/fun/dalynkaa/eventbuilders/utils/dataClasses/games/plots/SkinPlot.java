@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class SkinPlot extends Plot{
-    public SkinPlot(UUID gameId, Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest) {
-        super(gameId, plotPosition, stageId, pos1, pos2, owner, isGenerated, latest);
+    public SkinPlot(UUID gameId, Integer plotPosition, Integer stageId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest, Integer pointSum) {
+        super(gameId, plotPosition, stageId, pos1, pos2, owner, isGenerated, latest, pointSum);
     }
 
-    public SkinPlot(UUID plot_id, Integer plotPosition, Integer stageId, UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest) {
-        super(plot_id, plotPosition, stageId, gameId, pos1, pos2, owner, isGenerated, latest);
+    public SkinPlot(UUID plot_id, Integer plotPosition, Integer stageId, UUID gameId, PlotLocation pos1, PlotLocation pos2, PlotPlayer owner, Boolean isGenerated, Boolean latest, Integer pointSum) {
+        super(plot_id, plotPosition, stageId, gameId, pos1, pos2, owner, isGenerated, latest, pointSum);
     }
     public static Plot addPlotToEnd(Integer playerStage){
         Integer Y = -61;
@@ -36,14 +36,14 @@ public class SkinPlot extends Plot{
         Location pos2 = new Location(game.getWorld(),game.getPlotSize(),Y+(playerStage-1),1+(5*playerStage));
 
         if (latestPlot == null){
-            Plot plot = new SkinPlot(game.getGameId(), 1, playerStage,PlotLocation.fromLocation(pos1),PlotLocation.fromLocation(pos2),null,false,true);
+            Plot plot = new SkinPlot(game.getGameId(), 1, playerStage,PlotLocation.fromLocation(pos1),PlotLocation.fromLocation(pos2),null,false,true, 0);
             plot.setLatest(true);
             EventBuilders.getInstance().plotHach.add(plot);
             plot.save();
             //plot.fill(Material.MUD_BRICK_SLAB);
             return plot;
         }
-        Plot plot = new SkinPlot(game.getGameId(), 1 ,playerStage , latestPlot.getPos1().setY(Y+(playerStage-1)).next(game),latestPlot.getPos2().setY(Y+(playerStage-1)).next(game),null,false,true);
+        Plot plot = new SkinPlot(game.getGameId(), 1 ,playerStage , latestPlot.getPos1().setY(Y+(playerStage-1)).next(game),latestPlot.getPos2().setY(Y+(playerStage-1)).next(game),null,false,true, 0);
         plot.setLatest(true);
         EventBuilders.getInstance().plotHach.add(plot);
         plot.save();

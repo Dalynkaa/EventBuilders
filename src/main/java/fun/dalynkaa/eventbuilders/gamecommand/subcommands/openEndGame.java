@@ -1,7 +1,7 @@
 package fun.dalynkaa.eventbuilders.gamecommand.subcommands;
 
 import fun.dalynkaa.eventbuilders.gamecommand.GameSubCommand;
-import fun.dalynkaa.eventbuilders.guis.EndGameGui;
+import fun.dalynkaa.eventbuilders.guis.PlotListGui;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.VoteFilter;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.PlotPlayer;
@@ -29,7 +29,7 @@ public class openEndGame extends GameSubCommand {
     public void perform(Player player, String[] args) {
         PlotPlayer plotPlayer = PlotPlayer.fromUUID(player.getUniqueId());
         if (plotPlayer.isVoter() || plotPlayer.isAdmin()){
-            new EndGameGui(VoteFilter.VOTED, Game.getCurrentGame(), plotPlayer).open(player.getPlayer());
+            new PlotListGui(VoteFilter.VOTED, Game.getCurrentGame(), plotPlayer, PlotListGui.GuiType.END_GAME).open(player.getPlayer());
         }
     }
 

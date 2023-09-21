@@ -50,7 +50,7 @@ public class WorldListGui {
                                     .setName(Component.text("Список игроков", TextColor.fromCSSHexString("#22a6b3")))
                                     .setLore(Arrays.asList(Component.text("Открывает список игроков вместе с оценками",TextColor.fromCSSHexString("#a29bfe"))))
                                     .build((event1 -> {
-                                        VoteListGui voteListGui = new VoteListGui(VoteFilter.NORMAL, game, PlotPlayer.fromUUID(player.getUniqueId()));
+                                        PlotListGui voteListGui = new PlotListGui(VoteFilter.NORMAL, game, PlotPlayer.fromUUID(player.getUniqueId()), PlotListGui.GuiType.NORMAL);
                                         voteListGui.open(player);
                                     }), "perl");
                             player.getInventory().setItem(6, perl);

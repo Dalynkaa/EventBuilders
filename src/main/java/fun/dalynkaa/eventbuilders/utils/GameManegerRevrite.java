@@ -124,7 +124,7 @@ public class GameManegerRevrite {
     public void updatePlotInToTablePlots(Plot plot) {
         try {
             Connection c = ConntectToDb();
-            PreparedStatement s = c.prepareStatement("UPDATE `plots` SET `plotPosition`=?,`stageId`=?, `game_id`=?,`location1`=?,`location2`=?,`owner`=?,`latest`=?,`isGenerated`=? WHERE `plot_id` = ?");
+            PreparedStatement s = c.prepareStatement("UPDATE `plots` SET `plotPosition`=?,`stageId`=?, `game_id`=?,`location1`=?,`location2`=?,`owner`=?,`latest`=?,`isGenerated`=?,`pointSum`=? WHERE `plot_id` = ?");
             s.setInt(1, plot.getPlotPosition());
             s.setInt(2, plot.getStageId());
             s.setString(3, plot.getGameId().toString());
@@ -137,7 +137,8 @@ public class GameManegerRevrite {
             }
             s.setBoolean(7, plot.isGenerated());
             s.setBoolean(8, plot.isLatest());
-            s.setString(9, plot.getPlotId().toString());
+            s.setInt(9, plot.getPointSum());
+            s.setString(10, plot.getPlotId().toString());
             int affectedRows = s.executeUpdate();
             c.commit();
              
@@ -208,7 +209,7 @@ public class GameManegerRevrite {
         try {
             Connection c = ConntectToDb();
             PreparedStatement s = c.prepareStatement(
-                    "UPDATE `game` SET `game_type`=?,`game_stage`=?,`game_time`=?,`resource_time`=?,`thema`=?,`plot_size`=?,`plot_count`=?,`schema_name`=?,`use_schema`=? WHERE `game_id` = ?"
+                    "UPDATE `game` SET `game_type`=?,`game_stage`=?,`game_time`=?,`resource_time`=?,`thema`=?,`plot_size`=?,`plot_count`=?,`schema_name`=?,`use_schema`=?, `latest`=? WHERE `game_id` = ?"
             );
             s.setInt(1,game.getGameType().getIntType());
             s.setInt(2,game.getGameStage().getType());
@@ -219,7 +220,8 @@ public class GameManegerRevrite {
             s.setInt(7,game.getPlotCount());
             s.setString(8,game.getShemaName());
             s.setBoolean(9,game.getUseSchema());
-            s.setString(10,game.getGameId().toString());
+            s.setBoolean(10,game.getLatest());
+            s.setString(11,game.getGameId().toString());
             int affectedRows = s.executeUpdate();
             c.commit();
              
@@ -423,7 +425,7 @@ public class GameManegerRevrite {
     public ResultSet getGameVote(UUID game_id){
         try {
             Connection c = ConntectToDb();
-            PreparedStatement s = c.prepareStatement("SELECT * FROM `votes` WHERE `game_id` = ?");
+            PreparedStatement s = c.prepareStatement("SELECT voter, plot_id, type FROM votes WHERE game_id = ?");
             s.setString(1, game_id.toString());
             ResultSet result = s.executeQuery();
             return result;
@@ -483,6 +485,22 @@ public class GameManegerRevrite {
                 return result;
             }else {
                  
+                return null;
+            }
+        }catch (Exception ignored) {
+            return null;
+        }
+    }
+    public ResultSet getLatestGame(){
+        try {
+            Connection c = ConntectToDb();
+            PreparedStatement s = c.prepareStatement("SELECT * FROM `game` WHERE `latest` = 1");
+            ResultSet result = s.executeQuery();
+            Boolean hasData = result.next();
+            if (hasData){
+                c.commit();
+                return result;
+            }else {
                 return null;
             }
         }catch (Exception ignored) {

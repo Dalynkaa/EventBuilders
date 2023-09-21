@@ -20,20 +20,20 @@ import java.util.List;
 import java.util.UUID;
 
 public class SkinGame extends Game{
-    public SkinGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame) {
-        super(gameId, gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame);
+    public SkinGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
+        super(gameId, gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame, latest);
     }
 
-    public SkinGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame) {
-        super(gameId, gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame);
+    public SkinGame(UUID gameId, GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame, Boolean latest) {
+        super(gameId, gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame, latest);
     }
 
-    public SkinGame(GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame) {
-        super(gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame);
+    public SkinGame(GameType gameType, GameStage gameStage, Integer gameTime, Integer resourceTime, String thema, Integer plotSize, Integer plot_count, String shemaName, Boolean useSchema, Boolean currentGame, Boolean latest) {
+        super(gameType, gameStage, gameTime, resourceTime, thema, plotSize, plot_count, shemaName, useSchema, currentGame, latest);
     }
 
-    public SkinGame(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame) {
-        super(gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame);
+    public SkinGame(GameType gameType, GameStage gameStage, Integer gameTime, String thema, Integer plotSize, Integer plot_count, Boolean currentGame, Boolean latest) {
+        super(gameType, gameStage, gameTime, thema, plotSize, plot_count, currentGame, latest);
     }
 
     public SkinGame(GameType gameType, GameStage gameStage, String thema) {
@@ -140,7 +140,6 @@ public class SkinGame extends Game{
     }
     public boolean checkPlayerJoin(UUID uuid, Game game, PlotPlayer plotPlayer){
         if (game.getGameStage().equals(GameStage.SKIN_NO_GAME)){
-            Bukkit.getLogger().info("2.2");
             return true;
         }
         return false;

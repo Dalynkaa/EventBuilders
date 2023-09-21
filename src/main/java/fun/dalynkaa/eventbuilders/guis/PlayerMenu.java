@@ -57,7 +57,7 @@ public class PlayerMenu {
                 .lore(Arrays.asList(
                         Component.text("Отерывает список с результатами преведущей игры для телепортации",TextColor.fromCSSHexString("#6c5ce7"))
                 )).asGuiItem((event -> {
-                    LastGameGui lastGameGui = new LastGameGui(VoteFilter.NORMAL, PlotPlayer.fromUUID(event.getWhoClicked().getUniqueId()));
+                    PlotListGui lastGameGui = new PlotListGui(VoteFilter.NORMAL, Game.getLatestGame(), PlotPlayer.fromUUID(event.getWhoClicked().getUniqueId()), PlotListGui.GuiType.NORMAL);
                     lastGameGui.open(event.getWhoClicked());
                 }));
         GuiItem spawn = ItemBuilder.from(CustomStack.getInstance("dalynkaa:spawn_button").getItemStack())

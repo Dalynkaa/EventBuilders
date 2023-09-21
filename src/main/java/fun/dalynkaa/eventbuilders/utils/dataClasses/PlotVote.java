@@ -1,7 +1,7 @@
 package fun.dalynkaa.eventbuilders.utils.dataClasses;
 
 import fun.dalynkaa.eventbuilders.EventBuilders;
-import fun.dalynkaa.eventbuilders.guis.VoteListGui;
+import fun.dalynkaa.eventbuilders.guis.PlotListGui;
 import fun.dalynkaa.eventbuilders.utils.UsableClasses.InventoryButton;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.Enums.VoteFilter;
 import fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game;
@@ -119,7 +119,7 @@ public class PlotVote {
                 .setName(Component.text("Список игроков", TextColor.fromCSSHexString("#22a6b3")))
                 .setLore(Arrays.asList(Component.text("Открывает список игроков вместе с оценками",TextColor.fromCSSHexString("#a29bfe"))))
                 .build((event -> {
-                    VoteListGui voteListGui = new VoteListGui(VoteFilter.NORMAL, game, plotPlayer);
+                    PlotListGui voteListGui = new PlotListGui(VoteFilter.NORMAL, game, plotPlayer, PlotListGui.GuiType.NORMAL);
                     voteListGui.open(plotPlayer.getPlayer());
                 }), "perl");
         plotPlayer.getPlayer().getInventory().setItem(0, dirt);
@@ -156,7 +156,7 @@ public class PlotVote {
                     .append(Component.text("Что бы поствить оценку вы должны находится на участке игрока!",TextColor.fromCSSHexString("#55efc4"))));
             return;
         }
-        fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot currentPlot = voter.getCurrentLocation();
+        Plot currentPlot = voter.getCurrentLocation();
         if (currentPlot.getPlotPlayer() == null){
             voter.getPlayer().sendMessage(PREFIX.append(Component.text(" : ", TextColor.fromCSSHexString("#2d3436")))
                     .append(Component.text("Этот участок пустой!",TextColor.fromCSSHexString("#55efc4"))));
@@ -166,39 +166,36 @@ public class PlotVote {
         PlotVote plotVote = new PlotVote(voter, currentPlot.getPlotPlayer(), currentPlot, currentGame, type);
         plotVote.save();
         ArrayList<PlotVote> votes = PlotVote.getPlotVotes(currentGame, currentPlot);
-        Bukkit.getLogger().info(String.valueOf(votes.size()));
-        Bukkit.getLogger().info(String.valueOf(PlotPlayer.getOnlinePlotVoters().size()));
+        int summ = votes.stream().mapToInt(PlotVote::getType).sum();
+        plotVote.getPlot().setPointSum(summ).update();
         if (votes.size() == PlotPlayer.getOnlinePlotVoters().size()){
             currentPlot.setBorders(currentPlot.getPlotPlayer().getPlotSkin().getCornerVoted());
-            Bukkit.getLogger().info(String.valueOf(true));
         }
     }
-
-    public static HashMap<UUID, ArrayList<PlotVote>> getGameVotes(fun.dalynkaa.eventbuilders.utils.dataClasses.games.Game game){
+    public static HashMap<UUID, ArrayList<PlotVote>> getGameVotes(Game game) {
         HashMap<UUID, ArrayList<PlotVote>> votes = new HashMap<>();
         ResultSet resultSet = EventBuilders.getInstance().db.getGameVote(game.getGameId());
         try {
-            while (resultSet.next()){
-                UUID voter_result = UUID.fromString(resultSet.getString("voter"));
-                UUID plot_result = UUID.fromString(resultSet.getString("plot_id"));
-                Integer type_result = resultSet.getInt("type");
-                fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot plot1 = fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot.getPlotById(plot_result);
-                if (!votes.containsKey(plot_result)){
-                    votes.put(plot_result, new ArrayList<>(Arrays.asList(new PlotVote(PlotPlayer.fromUUID(voter_result),plot1.getPlotPlayer(), plot1, game, type_result))));
-                }else {
-                    ArrayList<PlotVote> voteList = votes.get(plot_result);
-                    voteList.add(new PlotVote(PlotPlayer.fromUUID(voter_result),plot1.getPlotPlayer(), plot1, game, type_result));
-                    votes.put(plot_result, voteList);
-                }
+            UUID voterResult, plotResult;
+            int typeResult;
+            Plot plot;
+
+            while (resultSet.next()) {
+                voterResult = UUID.fromString(resultSet.getString("voter"));
+                plotResult = UUID.fromString(resultSet.getString("plot_id"));
+                typeResult = resultSet.getInt("type");
+                plot = Plot.getPlotById(plotResult);
+
+                votes.computeIfAbsent(plotResult, k -> new ArrayList<>())
+                        .add(new PlotVote(PlotPlayer.fromUUID(voterResult), plot.getPlotPlayer(), plot, game, typeResult));
             }
-            Bukkit.getLogger().info(String.valueOf(votes.keySet().toArray().length));
             return votes;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
             return null;
         }
     }
-    public static ArrayList<PlotVote> getPlotVotes(Game game, fun.dalynkaa.eventbuilders.utils.dataClasses.games.plots.Plot plot){
+    public static ArrayList<PlotVote> getPlotVotes(Game game, Plot plot){
         ArrayList<PlotVote> votes = new ArrayList<>();
         ResultSet resultSet = EventBuilders.getInstance().db.getPlotVote(game.getGameId(), plot.getPlotId());
         try {
